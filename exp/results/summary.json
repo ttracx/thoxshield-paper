@@ -1,0 +1,254 @@
+{
+  "paper": "ThoxShield: Bloat-Capped Counter-REA Defense for Local-First AI Artifacts",
+  "version": "v1.1.2",
+  "date": "2026-11-10",
+  "environment": {
+    "os": "Linux (build container), Node v24.22.1, cargo/rustc 1.99.1",
+    "note": "All figures below were measured in this environment on 2026-11-10. ThoxShield fixture figures are re-derived by exp/run_experiments.py (pack-relative; needs a thoxshield binary via THOXSHIELD_BIN). Upstream figures were measured live from the bla-agents v3.2.4 tree in the same session; commands are recorded per figure."
+  },
+  "upstream_bla_agents_v3_2_4": {
+    "source_loc_typescript": 45357,
+    "test_loc": 19012,
+    "test_files": 121,
+    "test_result": {
+      "passed": 693,
+      "skipped": 4,
+      "files_passed": 121,
+      "duration_s": 152.8,
+      "command": "npm test"
+    },
+    "dist_bytes": 4299162,
+    "node_modules_bytes": 72351744,
+    "runtime_deps": [
+      "@babel/parser",
+      "@babel/traverse",
+      "@babel/generator",
+      "@babel/types"
+    ],
+    "benchmark_aggregate_token_amplification": {
+      "this_run": 1067.3,
+      "readme_claim": 639.5,
+      "state_md_claim": 612.5,
+      "evidence_class": "SIMULATED",
+      "note": "Modeled estimates from the upstream token estimator; the three published/run figures disagree, so the paper cites none of them as results and uses them only to motivate claims discipline."
+    },
+    "harden_bloat_measured": {
+      "command": "node dist/cli.js harden <fixture dir> (default 'bankrupt' intensity)",
+      "javascript": {
+        "original_bytes": 93,
+        "hardened_bytes": 133951
+      },
+      "python": {
+        "original_bytes": 44,
+        "hardened_bytes": 39795
+      },
+      "gguf": {
+        "original_bytes": 104,
+        "hardened_bytes": 7584
+      },
+      "wasm": {
+        "original_bytes": 8,
+        "hardened_bytes": 3873169
+      },
+      "evidence_class": "MEASURED"
+    }
+  },
+  "thoxshield_v0_1_0": {
+    "binary_bytes": 481568,
+    "external_dependencies": 0,
+    "unit_tests": {
+      "passed": 2,
+      "scope": "SHA-256 known vectors; JSON round-trip"
+    },
+    "fixtures": {
+      "model.gguf": {
+        "original_bytes": 240,
+        "hardened_bytes": 986,
+        "added_bytes": 746,
+        "verify_ok": true,
+        "independent_check": "Python struct parser: original KV keys preserved in order, tensor count unchanged, post-metadata bytes identical, nesting-breaker array depth 35"
+      },
+      "model.safetensors": {
+        "original_bytes": 224,
+        "hardened_bytes": 802,
+        "added_bytes": 578,
+        "verify_ok": true,
+        "independent_check": "Python json parse: header valid, tensor payload bytes identical, topology nesting depth 36"
+      },
+      "core.wasm": {
+        "original_bytes": 31,
+        "hardened_bytes": 334,
+        "added_bytes": 303,
+        "verify_ok": true,
+        "independent_check": "Node WebAssembly.validate true before and after; hardened module compiles; exports unchanged"
+      }
+    },
+    "audit_232_file_tree_ms": 480.4,
+    "team_loop": {
+      "success": true,
+      "loops_run": 1,
+      "wall_ms": 10.1,
+      "blocked_case": "On a tree containing a planted FLAG{...} marker and a shipped source map, the loop stopped before hardening and reported both artifacts; exit code 1; report and log still written."
+    },
+    "evidence_class": "MEASURED"
+  },
+  "claims_not_made": [
+    "No claim that light shields defeat a determined human analyst; defense-in-depth only.",
+    "No claim of strip resistance: removal cost measured at <1 ms with a spec-only stripper (lab v2, STRIP-01).",
+    "No live REA run against ThoxShield output yet: process-level trips remain future work; the depth-budget result is SIMULATED (in-walk budget enforcement, lab v2 SIM-02) and labeled as such.",
+    "No modeled token or dollar amplification figures are reported as results."
+  ],
+  "virtual_test_lab_v2": {
+    "note": "Built after the THOX Research Team review of the incoming v1 lab (8 kill shots, all dispositioned). Items computed, no hardcoded passes; reference readers (gguf-py, safetensors library, Node) provide independence; thoxshield verify is labeled SELF-CHECK.",
+    "tool_version": "thoxshield v0.1.1 (GGUF alignment fix, see defect_found)",
+    "binary_bytes": 485120,
+    "binary_sha256": "e2db90612ac09eea78c5471d3c96d5b9b319c48fe72204507d30739b0037802c",
+    "result": "12/12 evidence items pass (STRIP-01 'pass' = the limitation was confirmed and measured)",
+    "evidence": {
+      "FIX-02": {
+        "spec_tensors": 2,
+        "st_tensors": [
+          "weight.0",
+          "weight.1"
+        ]
+      },
+      "HRD-02": {
+        "exit": 0,
+        "elapsed_ms": 4714
+      },
+      "REAL-vocab": {
+        "tensors": 0,
+        "names_identical": true,
+        "sample_tensor_identical": true,
+        "orig_bytes": 1766807,
+        "added_bytes": 777
+      },
+      "REAL-prod": {
+        "tensors": 290,
+        "names_identical": true,
+        "sample_tensor_identical": true,
+        "orig_bytes": 397808032,
+        "added_bytes": 736
+      },
+      "GGUF-SPEC": {
+        "tensors": 2,
+        "tensor_data_identical": true
+      },
+      "ST-LOAD": {
+        "tensors_equal": true,
+        "header_json_depth_root1": 38
+      },
+      "WASM-LOAD": {
+        "orig": true,
+        "hardened": true
+      },
+      "VER-SELF": {
+        "all_ok": true
+      },
+      "SIM-02": {
+        "aborted": true,
+        "on_key": "thoxshield.nesting.breaker",
+        "at_depth": 33
+      },
+      "DET-02": {
+        "identical": true
+      },
+      "STRIP-01": {
+        "gguf_spec_byte_exact": true,
+        "safetensors_payload_exact": true,
+        "safetensors_header_semantically_equal": true,
+        "wasm_byte_exact": true,
+        "times_ms": {
+          "gguf": 0.45,
+          "safetensors": 0.3,
+          "wasm": 0.14
+        }
+      },
+      "COMP-01": {
+        "spec.gguf": {
+          "orig_bytes": 1328,
+          "upstream_hardened_bytes": 8875,
+          "thoxshield_hardened_bytes": 2096
+        },
+        "core.wasm": {
+          "orig_bytes": 36,
+          "upstream_hardened_bytes": 6880103,
+          "thoxshield_hardened_bytes": 339
+        }
+      }
+    },
+    "defect_found": {
+      "id": "ALIGN-1",
+      "severity": "critical, fixed in v0.1.1",
+      "description": "v0.1.0 harden_gguf copied the post-metadata tail verbatim; on real GGUF files the tensor data section must start at the file's alignment boundary (general.alignment, default 32), so inserted metadata shifted every reader-visible tensor. Detected by gguf-py on a production 380 MB GGUF (290 tensors): all tensor byte comparisons failed pre-fix. v0.1.1 re-pads after the tensor-info region and verify now checks tensor-info identity, data-section identity, and data-start alignment.",
+      "post_fix": "gguf-py loads hardened production GGUF; all 290 tensor byte streams identical; growth +736 B (746 B of metadata adjusted by alignment re-padding, band +/-31 B)."
+    },
+    "depth_conventions": {
+      "gguf_array_depth": "nested ARRAY frames on the breaker chain = 35",
+      "safetensors_header_depth": "recursive dict/list depth of the whole header JSON, root = 1: 38 (the topology value alone measures 36; both exceed 32; earlier documents used different roots without stating them)"
+    },
+    "safetensors_added_bytes": "fixture-dependent (header is rewritten): 578 B on the v1.0 fixture, 619 B on lab fixtures; NOT a constant like GGUF/WASM",
+    "team_loop_wall_ms": "~10-50 ms across runs (v1 addendum's 10-30 ms restated)",
+    "strip_limitation": "A ~60-line spec-only stripper recovers GGUF/WASM originals byte-exactly and the Safetensors payload exactly (header semantically equal) in <1 ms per artifact. Light shields are analyzer-budget tripwires + attribution canaries, NOT tamper resistance. Measured, not hidden.",
+    "strip_oracle_note": "Security review addition: the origin SHA-256 doubles as a strip-verification oracle and a provenance fingerprint (matchable against public base models); the breaker's +3 margin over the published limit is visible in every artifact. Both stated in the paper's Sections 7 and 9."
+  },
+  "thoxshield_v0_1_2": {
+    "note": "Systems fixes folded the same night: uniform skip-if-sealed (idempotent harden; team loop succeeds on sealed trees), verify identity case + structural Safetensors header-keys check, GGUF parser depth cap 512, audit fails loudly on unreadable files. Lab v2 re-run on v0.1.2: 12/12 (binary 486,808 B, sha256 1e32e075...).",
+    "binary_bytes": 486808,
+    "memory_limitation": "Peak RSS approx 2x artifact size (whole-file loads); measured 1,026 MiB on a 512 MiB GGUF in the systems review. Documented in paper limitations + repo docs; streaming is future work.",
+    "binary_sha256": "34592b6d1f13e40849185e6a35b4fbb7596db3cb9134908a3433620767acf8cb",
+    "version_string_fix": "Pre-release correction 2026-11-10: compiled-in VERSION const read \"0.1.0\"; fixed to \"0.1.2\" and rebuilt. Binary size unchanged (486,808 B); sealed artifacts byte-identical pre/post fix (version string is not embedded in shields; canary + origin SHA-256 only), verified on the reference fixtures. Lab v2 and pilot evidence stand. Earlier v0.1.2 binary sha256 was 1e32e075fc6703f6127ca2cb40ce41164dd86265152baa790332d3c1ddb0d5d0."
+  },
+  "release_verify_rc": {
+    "source": "Founder-supplied archive (THOX_Release_Verify_v0.1.0-rc.1), reviewed 2026-11-10",
+    "verdict": "Sound, honestly scoped digest-receipt utility + deterministic receipt-review harness. SHA256SUMS verify against received files; 17/17 tests pass on re-run; NIST abc vector reproduces (match exit 0, mismatch exit 1); benchmark JSON matches its paper's medians (13,056 KiB vs 74,624 KiB, 64 MiB fixture, 5 runs).",
+    "incorporation": "Adopted as the receipt format for ThoxShield release manifests: manifest digests get release-verify receipts at release time. NOT merged into the thoxshield binary (keeps zero-dependency Rust scope). Its paper stays a separate engineering report; byline/consent process applies before any publication. POSIX-only (O_NOFOLLOW/O_NONBLOCK); macOS/Windows evidence pending per its own status note."
+  },
+  "prior_versions": {
+    "v1.1.0": {
+      "pdf_sha256": "aa8305c44ed1eab0cb0afe3dc34c1d4ebdeda6b5e1a40c0f0ef802dc85a19ab0",
+      "html_sha256": "3ec5bb15e9950fceca01283fc8cc2a2b4785244cf698149e7177c7667fa5d577",
+      "demo_sha256": "86e17011c2aabe79015f3dc64cf677ffc5c86f6d750737f08495f23bb9f4e0aa",
+      "note": "Superseded by v1.1.1. Citation corrections only; no evidence, figures, or claims of measurement changed."
+    },
+    "v1.1.1": {
+      "pdf_sha256": "d753d0a78a6580c09dffe590dab13ed9e25a965cd65e95cf4cb779ead516a595",
+      "html_sha256": "0459bbdcac104a16a273afdb860bb40db8bd264258030556b10e9fef24f29c37",
+      "demo_sha256": "2b6fad033b7744ad5ef75ed703f511b6159b330d0c1783cd2b525d9f894e46f9",
+      "note": "Superseded by v1.1.2 after the independent standards audit (STANDARDS-AUDIT-v1.1.1): template rebuild, pack scrub + bundle layout, demo rebuilt with real computation, threat-model section, abstract binary size corrected to the v0.1.2 tool. A labeled supplement consent is required for v1.1.2 bytes."
+    }
+  },
+  "v1_1_1_changes": {
+    "source": "THOX Research Team literature review, 13 primary sources opened firsthand",
+    "changes": [
+      "Ref [2]: nonexistent 'Morluto et al.' paper replaced with software citation (Morluto, REA: Reverse Engineer Anything, MCP server + CLI, npm rea-agents, MIT); capability claims anchored to Pordanesh & Tan arXiv:2406.06637 and LLM4Decompile arXiv:2403.05286",
+      "Ref [3]: FIPS PUB 180-4 year corrected 2015 -> 2012 (2015 reissue changed only the Applicability Clause)",
+      "Ref [4]: 'Gerganov et al.' replaced with ggml-org, GGUF Format Specification, docs/gguf.md, format version 3, spec URL",
+      "Ref [5]: kept as locator; spec facts stated (100 MB header cap, __metadata__ string-to-string only)",
+      "Ref [6]: pinned to WASM Core Specification section 5.5.3, load-bearing sentence quoted ('must not invalidate the module')",
+      "Ref [7]: self-citation removed from numbered list; moved to Artifact availability note",
+      "Prior art added and cited in body: Collberg/Thomborson/Low TR-148 1997, Barak et al. CRYPTO 2001 / JACM 2012 (DOI 10.1145/2160158.2160159), Schrittwieser et al. ACM CSUR 49(1) 2016 (DOI 10.1145/2886012), LLM4Decompile arXiv:2403.05286, Pordanesh & Tan arXiv:2406.06637, SWE-agent arXiv:2405.15793, Greshake et al. arXiv:2302.12173",
+      "Section 2 'three published facts' reframed as BLA's published results/rationale, attributed inline; all 32-level nesting mentions scoped as REA analyzer budgets (MODEL_JSON_NESTING / MODEL_METADATA_NESTING), never format properties",
+      "Novelty narrowed to three claims: measured hard-capped defender bloat for model artifacts; producer != verifier applied to release shielding; claims discipline on modeled multipliers",
+      "BLA token multipliers labeled modeled/internal estimates wherever they appear, never results",
+      "No-live-REA-run disclosure placed adjacent to effectiveness statements (abstract, Section 7, Limitations)",
+      "Related-work gap stated: no independent non-BLA measurement of agent cost amplification against model artifacts was found"
+    ],
+    "evidence_unchanged": true
+  },
+  "v1_1_2_changes": {
+    "source": "Independent standards audit of v1.1.1 (3 blockers, 5 majors, 8 minors)",
+    "changes": [
+      "Paper rebuilt FROM the canonical THOX Research Paper Template v1.0 files (paper.src.html structure + its 5,160-char stylesheet): dark cover with marks footer, Inter/JetBrains Mono, green-top-rule KPI cards, numbered two-column contents, black table headers, green section numbers",
+      "Abstract binary size corrected: 481,568 B was the superseded v0.1.0 build; the released tool is v0.1.2 at 486,808 B",
+      "New consolidated Threat model section (assets, three adversary classes, assumptions, out-of-scope), assembled from Sections 2/7/8/9 material of v1.1.1; no new experiments or claims",
+      "Production GGUF harden wall time (4.7 s, lab HRD-02) added to the Evaluation section",
+      "Demo rebuilt from the template demo_template.html with real in-browser computation (bloat comparison from this file's figures; nesting-budget walk that enforces the budget during traversal); canonical evidence labels only",
+      "Pack scrubbed of internal paths and internal-record material; bundle assembled to Research Paper Process v1.0 section 1.3 (README, named dist files, wp/qa, virtual test lab v2 code in exp/)",
+      "Reproducibility scoped honestly: exp/run_experiments.py is pack-relative and re-derives the ThoxShield fixture/preservation/loop figures; upstream figures and the 232-file audit timing are recorded same-session measurements",
+      "CITATION.cff license corrected MIT -> CC-BY-4.0 (the paper's license; MIT is the tool's)",
+      "Fixture delta scoping from the from-pack reproducibility run: GGUF +736 B on the current reference fixture (746 B of metadata, alignment-adjusted; v0.1.0's fixture measured +746 B pre-alignment-fix), Safetensors 578-619 B fixture-dependent, WASM +303 B"
+    ],
+    "evidence_unchanged": "No new experiments; all measured evidence carried from v1.1.1 except the reproducibility re-derivation above."
+  }
+}

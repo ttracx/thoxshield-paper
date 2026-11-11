@@ -1,0 +1,18 @@
+NOTICE
+
+ThoxShield: Bloat-Capped Counter-REA Defense for Local-First AI Artifacts
+THOX.ai Research, technical report v1.1.2.
+
+(c) 2026 THOX.ai LLC. All rights reserved, subject to applicable licenses.
+This paper is licensed CC BY 4.0 (see LICENSE). The ThoxShield tool is
+licensed MIT; its source lives at https://github.com/ttracx/thoxshield.
+
+THOX.ai(TM) and THOX product names and logos are trademarks of THOX.ai LLC.
+Other marks belong to their respective owners.
+
+Status: preprint, not peer reviewed.
+Version of record: DOI 10.5281/zenodo.24146345
+Concept DOI:      10.5281/zenodo.24146344
+
+Credit: the counter-REA concept and the format-budget research this work
+builds on are credited to BLA (Blind LLM Agents), qybaihe/bla, MIT.

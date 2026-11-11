@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ThoxShield Mechanisms Demo</title>
+<meta name="description" content="Runs the real ThoxShield arithmetic in the browser: same-fixture bloat comparison, the bloat-cap rule, and a nesting-budget walk that enforces REA's published 32-level budget during traversal. Companion to the ThoxShield technical report v1.1.2.">
+<style>
+
+:root{--bg:#FFFFFF;--fg:#111827;--muted:#6B7280;--rule:#E5E7EB;--card:#F9FAFB;--green:#047C3D;--green-ink:#047C3D;--pale:#E6F4EC;--bad:#B91C1C;--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;--sans:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B0F14;--fg:#F3F4F6;--muted:#9CA3AF;--rule:#1F2937;--card:#111827;--green:#05A451;--green-ink:#05A451;--pale:#0F2A1B;--bad:#F87171}}
+:root[data-theme="dark"]{--bg:#0B0F14;--fg:#F3F4F6;--muted:#9CA3AF;--rule:#1F2937;--card:#111827;--green:#05A451;--green-ink:#05A451;--pale:#0F2A1B;--bad:#F87171}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.5;font-size:15px}
+.wrap{max-width:960px;margin:0 auto;padding:24px 16px 48px}
+header{border-bottom:2px solid var(--green);padding-bottom:10px;margin-bottom:18px}
+.eyebrow{font-family:var(--mono);font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:.08em}
+h1{font-size:24px;margin:6px 0 4px;line-height:1.2}
+h2{font-size:18px;margin:26px 0 8px;border-bottom:1px solid var(--rule);padding-bottom:4px}
+p{margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:14px 14px;margin:10px 0}
+label{display:block;font-size:13px;color:var(--muted);margin:8px 0 2px}
+input,select,textarea{width:100%;max-width:100%;font-family:var(--mono);font-size:13px;padding:7px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--fg)}
+textarea{min-height:70px}
+button{font-family:var(--sans);font-size:14px;font-weight:600;background:var(--green);color:#fff;border:0;border-radius:6px;padding:8px 14px;margin:10px 6px 0 0;cursor:pointer}
+button.secondary{background:transparent;color:var(--green-ink);border:1px solid var(--green)}
+pre,.out{font-family:var(--mono);font-size:12.5px;white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--rule);border-radius:6px;padding:10px;margin:8px 0 0;overflow-x:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.ok{color:var(--green-ink);font-weight:600}.bad{color:var(--bad);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:10px 0}
+.kpi{border:1px solid var(--rule);border-top:3px solid var(--green);border-radius:6px;padding:10px;background:var(--card)}
+.kv{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green-ink)}
+.kl{font-size:12px;color:var(--muted);margin-top:3px}
+.kt{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--rule)}
+th{color:var(--muted);font-weight:600}
+.note{font-size:13px;color:var(--muted)}
+footer{margin-top:30px;font-size:12px;color:var(--muted);border-top:1px solid var(--rule);padding-top:10px}
+.theme{float:right;font-size:12px;background:transparent;color:var(--muted);border:1px solid var(--rule);padding:4px 8px;margin:0}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <button class="theme" id="themeBtn" type="button">Theme: auto</button>
+  <div class="eyebrow">THOX.ai Research &middot; companion demo to technical report v1.1.2</div>
+  <h1>ThoxShield mechanisms, running in your browser</h1>
+  <p class="note">Everything below computes client-side in plain JavaScript from the paper&rsquo;s measured figures (embedded from <code>exp/results/summary.json</code>). Nothing is played back: change any input and the outputs change. Classes: MEASURED figures are the paper&rsquo;s; outputs derived from them are CALCULATED; the nesting walk is a SIMULATED analyzer (a live REA run remains future work, as the paper states).</p>
+</header>
+
+<h2>Measured results (from summary.json)</h2>
+<div class="kpis" id="kpis"></div>
+
+<h2>1. The bloat comparison, computed</h2>
+<div class="card">
+  <p class="note">Pick a same-fixture pair from the virtual test lab (item COMP-01: both tools ran on byte-identical inputs), or enter your own artifact size to apply the paper&rsquo;s measured Table 1 growth for the upstream default and the lite shield&rsquo;s measured added bytes. Outputs are CALCULATED from MEASURED inputs.</p>
+  <div class="grid">
+    <div><label>Case</label><select id="bCase">
+      <option value="gguf">GGUF fixture, 1,328 B (lab COMP-01)</option>
+      <option value="wasm">WASM fixture, 36 B (lab COMP-01)</option>
+      <option value="custom-gguf">My GGUF artifact (Table 1 growth 73&times;)</option>
+      <option value="custom-wasm">My WASM artifact (Table 1 growth 484,146&times;)</option>
+    </select></div>
+    <div><label>Your artifact size (bytes, custom cases)</label><input id="bSize" type="number" value="5000000"></div>
+  </div>
+  <button type="button" id="bRun">Compute</button>
+  <div class="out" id="bOut"></div>
+</div>
+
+<h2>2. Nesting-budget walk (SIMULATED analyzer)</h2>
+<div class="card">
+  <p class="note">Builds ThoxShield&rsquo;s GGUF nesting breaker (nested ARRAY frames) in memory and walks it with a budget enforced <em>during</em> traversal — the walk aborts the moment depth exceeds the budget, exactly the lab&rsquo;s SIM-02 method. REA&rsquo;s published budget is 32; the breaker depth is 35.</p>
+  <div class="grid">
+    <div><label>Analyzer budget (levels)</label><input id="wBudget" type="number" value="32"></div>
+    <div><label>Breaker depth (frames)</label><input id="wDepth" type="number" value="35"></div>
+  </div>
+  <button type="button" id="wRun">Walk</button>
+  <div class="out" id="wOut"></div>
+</div>
+
+<h2>3. The bloat cap, applied</h2>
+<div class="card">
+  <p class="note">ThoxShield refuses a shield that would exceed the cap: max(4,096 B, 5% of the artifact). Enter an artifact size and a format&rsquo;s measured lite addition to see the verdict the hardener would reach. CALCULATED.</p>
+  <div class="grid">
+    <div><label>Artifact size (bytes)</label><input id="cSize" type="number" value="100000"></div>
+    <div><label>Format (measured lite addition)</label><select id="cFmt">
+      <option value="736">GGUF (+736 B)</option>
+      <option value="619">Safetensors (+619 B, worst observed)</option>
+      <option value="303">WASM (+303 B)</option>
+    </select></div>
+  </div>
+  <button type="button" id="cRun">Apply cap</button>
+  <div class="out" id="cOut"></div>
+</div>
+
+<footer>Your AI. Your Data. Your Rules.&trade; &middot; THOX&reg;, ThoxOS&trade;, MeshStack&trade; and ThoxWork&trade; are marks of THOX.ai LLC. Preprint companion; not peer reviewed. No network calls are made by this page.</footer>
+</div>
+
+<script id="summary" type="application/json">/*__SUMMARY__*/</script>
+<script>
+"use strict";
+const S = JSON.parse(document.getElementById("summary").textContent);
+const LAB = S.virtual_test_lab_v2.evidence;
+function fmt(n){ return n.toLocaleString("en-US"); }
+// KPI cards from summary.json
+const kpis = [
+  [fmt(S.thoxshield_v0_1_2.binary_bytes) + " B", "the shipped tool: one zero-dependency Rust binary (v0.1.2)", "measured"],
+  ["+736 B", "lite growth on a production 380 MB GGUF, 290 tensors, reader-verified", "measured"],
+  ["339 B", "lite-hardened WASM fixture vs 6,880,103 B upstream (same fixture)", "measured"],
+  ["12 / 12", "virtual test lab v2 evidence items, classes labeled", "measured"],
+];
+document.getElementById("kpis").innerHTML = kpis.map(k =>
+  `<div class="kpi"><div class="kv">${k[0]}</div><div class="kl">${k[1]}</div><div class="kt">${k[2]}</div></div>`).join("");
+// 1. bloat comparison
+function runBloat(){
+  const c = document.getElementById("bCase").value;
+  const custom = parseFloat(document.getElementById("bSize").value) || 0;
+  let orig, up, lite, basis;
+  if (c === "gguf"){ const d = LAB["COMP-01"]["spec.gguf"]; orig = d.orig_bytes; up = d.upstream_hardened_bytes; lite = d.thoxshield_hardened_bytes; basis = "same fixture, both tools (lab COMP-01)"; }
+  else if (c === "wasm"){ const d = LAB["COMP-01"]["core.wasm"]; orig = d.orig_bytes; up = d.upstream_hardened_bytes; lite = d.thoxshield_hardened_bytes; basis = "same fixture, both tools (lab COMP-01)"; }
+  else if (c === "custom-gguf"){ orig = custom; up = Math.round(orig * (S.upstream_bla_agents_v3_2_4.harden_bloat_measured.gguf.hardened_bytes / S.upstream_bla_agents_v3_2_4.harden_bloat_measured.gguf.original_bytes)); lite = orig + 736; basis = "upstream: Table 1 measured growth applied; lite: +736 B measured addition"; }
+  else { orig = custom; up = Math.round(orig * (S.upstream_bla_agents_v3_2_4.harden_bloat_measured.wasm.hardened_bytes / S.upstream_bla_agents_v3_2_4.harden_bloat_measured.wasm.original_bytes)); lite = orig + 303; basis = "upstream: Table 1 measured growth applied; lite: +303 B measured addition"; }
+  document.getElementById("bOut").textContent =
+    `original:            ${fmt(orig)} B\n` +
+    `upstream bankrupt:   ${fmt(up)} B  (+${fmt(up - orig)} B)\n` +
+    `ThoxShield lite:     ${fmt(lite)} B  (+${fmt(lite - orig)} B)\n` +
+    `defender bytes saved: ${fmt(up - lite)} B  (${(up / lite).toFixed(1)}x less growth)\n` +
+    `basis: ${basis}. Class: CALCULATED from MEASURED inputs.`;
+}
+// 2. nesting-budget walk — budget enforced DURING traversal
+function buildBreaker(depth){
+  let v = "canary-leaf";
+  for (let i = 0; i < depth; i++) v = [v];
+  return v;
+}
+function walk(node, depth, budget, log){
+  if (depth > budget) { const e = new Error("budget exceeded"); e.atDepth = depth; throw e; }
+  if (Array.isArray(node)) { log.push(`depth ${depth}: ARRAY frame, descending`); return walk(node[0], depth + 1, budget, log); }
+  log.push(`depth ${depth}: leaf reached — walk complete`);
+  return depth;
+}
+function runWalk(){
+  const budget = parseInt(document.getElementById("wBudget").value, 10);
+  const depth = parseInt(document.getElementById("wDepth").value, 10);
+  const breaker = buildBreaker(depth);
+  const log = [];
+  try {
+    const end = walk(breaker, 1, budget, log);
+    document.getElementById("wOut").textContent = log.slice(0, 6).join("\n") +
+      `\n... (${log.length} steps)\nRESULT: walk COMPLETED at depth ${end} within budget ${budget}. Class: SIMULATED.`;
+  } catch (e) {
+    document.getElementById("wOut").textContent = log.slice(0, 6).join("\n") +
+      `\nRESULT: walk ABORTED at depth ${e.atDepth} — budget ${budget} exceeded during traversal; the analyzer downgrades or rejects the artifact. Class: SIMULATED (live REA run = future work).`;
+  }
+}
+// 3. bloat cap
+function runCap(){
+  const size = parseFloat(document.getElementById("cSize").value) || 0;
+  const add = parseFloat(document.getElementById("cFmt").value);
+  const cap = Math.max(4096, Math.floor(size * 0.05));
+  const verdict = add <= cap ? "APPLIED — within cap" : "REFUSED — shield exceeds cap (harden fails closed, artifact unmodified)";
+  document.getElementById("cOut").textContent =
+    `artifact: ${fmt(size)} B\ncap: max(4,096, 5%) = ${fmt(cap)} B\nlite addition: ${fmt(add)} B\nverdict: ${verdict}. Class: CALCULATED.`;
+}
+document.getElementById("bRun").addEventListener("click", runBloat);
+document.getElementById("wRun").addEventListener("click", runWalk);
+document.getElementById("cRun").addEventListener("click", runCap);
+document.getElementById("themeBtn").addEventListener("click", function(){
+  const r = document.documentElement;
+  const cur = r.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : "dark";
+  r.setAttribute("data-theme", next); this.textContent = "Theme: " + next;
+});
+runBloat(); runWalk(); runCap();
+</script>
+</body>
+</html>
