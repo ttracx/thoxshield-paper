@@ -1,5 +1,9 @@
 # ThoxShield — Research Paper Artifact Bundle v1.1.2
 
+![License](https://img.shields.io/badge/license-See%20LICENSE-lightgrey.svg)
+![THOX.ai](https://img.shields.io/badge/THOX.ai-LLC-red.svg)
+![Repository](https://img.shields.io/badge/repository-ttracx%2Fthoxshield--paper-0B1220)
+
 **Paper:** *ThoxShield: Bloat-Capped Counter-REA Defense for Local-First
 AI Artifacts* — THOX.ai Research, technical report v1.1.2, 2026-11-10.
 Authors: Craig Ross (Chief Executive Officer) and Tommy Xaypanya (CTO
@@ -53,3 +57,17 @@ stops before hardening). The upstream comparison figures and the
 232-file audit timing in `summary.json` are recorded same-session
 measurements with their commands noted in the file; Section 8's lab
 items re-derive via `exp/vlab.py` where their inputs are available.
+
+---
+
+## Legal
+
+Copyright (c) 2024-2026 THOX.ai LLC. All rights reserved.
+
+**THOX.ai LLC**
+- CTO: Tommy Xaypanya
+- CEO: Craig Ross
+
+See [LICENSE](LICENSE) for license terms.
+
+Unauthorized copying, modification, merger, publication, distribution, sublicensing, and/or selling of this software, via any medium, is strictly prohibited without prior written consent from THOX.ai LLC.
